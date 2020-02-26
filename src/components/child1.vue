@@ -3,7 +3,7 @@
         <p @click="showText" v-on="$listeners">{{msg}}</p>
         <Child3 @click="sss" :prop="someThing">
             <div>
-                ssss
+                ssssssss
             </div>
          <template v-slot:ss="{obj}">{{obj}}</template>
             </Child3>
