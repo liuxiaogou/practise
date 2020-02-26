@@ -1,6 +1,6 @@
 # three
 
-> A Vue.js project
+> 这是一个three.js 部分功能的实例
 
 ## Build Setup
 
