@@ -1,42 +1,71 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <!-- mouseover 是通过child1中的v-on="$listeners"  子组件中的事件触发会冒泡到父级（父子） -->
-    <!-- <component v-bind:is="currentTabComponent"></component>  动态组件 -->  
-    <Child1 @clicks="clickMe"  @mouseover="mouseOver"></Child1>
-    <Child2 :text.sync="msg" :explain="msg2" numb="wer"></Child2>
+      <HelloWorld></HelloWorld> 
+      <canvas id="c"></canvas>
+      <button @click="stopAnimation">停止动画</button>
+      <button @click="reply">回复</button>
+      
   </div>
 </template>
 
 <script>
-import Child1 from './components/child1'
-import Child2 from './components/child2'
+ import HelloWorld from './components/HelloWorld'
+
 export default {
   name: 'App',
-  components:{
-    Child1,Child2
+  components: {
+     HelloWorld
   },
-  data() {
+  data(){
     return {
-      msg:'props：这是父与子的通信,单向数据流，一般不能修改父传给你子的props值',
-      msg2:'包含了父作用域中不作为 prop 被识别 (且获取) 的特性绑定 (class 和 style 除外)',
-      currentTabComponent:'Child2'
+        scene:null,
+        stop_animation:false
     }
   },
   methods: {
-    clickMe() {
-        console.log('子组件点击了，父组件响应  $emit 子与父通信 ');
-        console.log(this.$root.key);
-        this.$root.key = '把root中data的数据改变了';
-        console.log(this.$root.key);
-    },
-    mouseOver(){
-      console.log('$listeners 会被展开和监听，来自父级的回调函数');
-    }
+      init(){
+        const canvas = document.querySelector('#c');
+        const arr =['/static/file/','/castle.mtl','/static/file/castle.obj']; //加载外部文件的路径
+        this.scene = new FY_3(canvas,{animation:true}); //创建一个构造函数的实例，一个实例代表了一个3d场景
+        this.scene.scene.add(this.scene.planeGeometry())
+        this.scene.getMtlAndObj(arr,(object)=>{
+          this.scene.scene.add(object);  //加载成功后添加到场景中去
+           //this.scene.render(); //执行渲染函数
+            requestAnimationFrame(this.action) //开始动画
+          this.scene.controls.addEventListener('change',()=>{ //监听鼠标、键盘事件 
+             this.scene.render(); //执行渲染函数
+          });
+          canvas.addEventListener( 'mousedown',this.onMouseDown, false ); //监听鼠标按下事件
+        });
+      },
+      action (){
+        cancelAnimationFrame(this.num);   //取消动画
+        if(!this.stop_animation){
+           this.num = requestAnimationFrame(this.action);   
+           this.scene.scene.rotateY(0.008);   //方式二  增量弧度
+        }
+         this.scene.scene.children[1].position.set(0,0,500);   //网格偏移量
+        // this.scene.scene.children[2].rotateY(0.01);
+         this.scene.render(); //执行渲染函数
+      },
+      onMouseDown(event){
+         let arr =this.scene.event(event,this.scene.scene.children[2].children);
+         console.log(arr);
+      },
+      stopAnimation(){
+        this.stop_animation = !this.stop_animation;
+        this.action();
+      },
+      reply(){
+        this.stop_animation = true;
+        this.init(); //执行渲染函数
+      }
   },
-  mounted () {
+  mounted() {
+    this.init();
+    // this.initThreeClickEvent();
   },
-  
+
 }
 </script>
 
@@ -48,5 +77,9 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+#c{
+  width:600px;
+  height: 300px;
 }
 </style>
